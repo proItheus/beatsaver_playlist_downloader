@@ -1,0 +1,33 @@
+name: Build PyInstaller Executable
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os_runner }}
+    strategy:
+      matrix:
+        os_runner: [ubuntu-latest, windows-latest]
+    name: Build on ${{ matrix.os_runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.13
+      - run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - run: |
+          pyinstaller --onefile bs_down_plist.non_async.py
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: executable-${{ matrix.os_runner }}-${{ matrix.arch }}
+          path: dist/
